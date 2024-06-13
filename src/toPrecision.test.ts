@@ -1,4 +1,5 @@
-import { Fraction, RoundingMode } from './fraction';
+import { Fraction } from './fraction';
+import { RoundingMode } from './fractionConfig';
 
 describe('toPrecision', () => {
   it('should throw if `significantDigits` is not an >= 1 integer', () => {
@@ -11,10 +12,6 @@ describe('toPrecision', () => {
   });
 
   it('should handle zeros correct', () => {
-    expect(Fraction.ZERO.toPrecision(1)).toBe('0');
-    expect(Fraction.ZERO.toPrecision(2)).toBe('0.0');
-    expect(Fraction.ZERO.toPrecision(3)).toBe('0.00');
-    expect(Fraction.ZERO.toPrecision(4)).toBe('0.000');
     expect(new Fraction(0).toPrecision(2)).toBe('0.0');
     expect(new Fraction('0').toPrecision(2)).toBe('0.0');
     expect(new Fraction('0.0').toPrecision(2)).toBe('0.0');

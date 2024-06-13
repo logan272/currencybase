@@ -1,330 +1,21 @@
 /* eslint-disable max-lines */
+import type { Config } from './fractionConfig';
+import type { FractionIsh as _FractionIsh } from './fractionData';
+import { FractionData } from './fractionData';
+import { FractionHelper } from './fractionHelper';
 
-import { addSeparators } from './addSeparators';
-import { gcd } from './gcd';
-import { toExponential } from './toExponential';
-import { toFixed } from './toFixed';
-import { toPrecision } from './toPrecision';
-import type { NumberIsh } from './types';
-
-/**
- * The available rounding modes.
- *
- * The default rounding mode is `ROUND_HALF_UP`
- */
-export enum RoundingMode {
-  /**
-   * Rounds away zero
-   *
-   * Examples:
-   *  1. 3.1 rounds to 4
-   *  2. -3.1 rounds to -4.
-   *  3. 3.8 rounds to 4
-   *  4. -3.8 rounds to -4.
-   */
-  ROUND_UP = 0,
-
-  /**
-   * Rounds towards zero
-   *
-   * Examples:
-   *  1. 3.1 rounds to 3
-   *  2. -3.1 rounds to -3.
-   *  3. 3.8 rounds to 3
-   *  4. -3.8 rounds to -3.
-   */
-  ROUND_DOWN = 1,
-
-  /**
-   * Rounds towards Infinity
-   *
-   * Examples:
-   *  1. 3.1 rounds to 4
-   *  2. -3.1 rounds to -3.
-   *  3. 3.8 rounds to 4
-   *  4. -3.8 rounds to -3.
-   */
-  ROUND_CEIL = 2,
-
-  /**
-   * Rounds towards -Infinity
-   *
-   * Examples:
-   *  1. 3.1 rounds to 3
-   *  2. -3.1 rounds to -4.
-   *  3. 3.8 rounds to 3
-   *  4. -3.8 rounds to -4.
-   */
-  ROUND_FLOOR = 3,
-
-  /**
-   * Rounds towards nearest neighbour.
-   * If equidistant, rounds away zero
-   *
-   * Examples:
-   *  1. 3.1 rounds to 3
-   *  2. -3.1 rounds to -3.
-   *  3. 3.5 rounds to 4.
-   *  4. -3.5 rounds to -4.
-   *  5. 3.8 rounds to 4
-   *  6. -3.8 rounds to -4.
-   */
-  ROUND_HALF_UP = 4,
-
-  /**
-   * Rounds towards nearest neighbour.
-   * If equidistant, rounds towards zero
-   *
-   * Examples:
-   *  1. 3.1 rounds to 3
-   *  2. -3.1 rounds to -3.
-   *  3. 3.5 rounds to 3.
-   *  4. -3.5 rounds to -3.
-   *  5. 3.8 rounds to 4
-   *  6. -3.8 rounds to -4.
-   */
-  ROUND_HALF_DOWN = 5,
-
-  /**
-   * Rounds towards nearest neighbour.
-   * If equidistant, rounds towards even neighbour
-   *
-   * Examples:
-   *  1. 3.1 rounds to 3
-   *  2. -3.1 rounds to -3.
-   *  3. 3.5 rounds to 4.
-   *  4. -3.5 rounds to -4.
-   *  5. 2.5 rounds to 2.
-   *  6. -2.5 rounds to -2.
-   *  7. 3.8 rounds to 4
-   *  8. -3.8 rounds to -4.
-   */
-  ROUND_HALF_EVEN = 6,
-
-  /**
-   * Rounds towards nearest neighbour.
-   * If equidistant, rounds towards Infinity
-   *
-   * Examples:
-   *  1. 3.1 rounds to 3
-   *  2. -3.1 rounds to -3.
-   *  3. 3.5 rounds to 4.
-   *  4. -3.5 rounds to -3.
-   *  5. 3.8 rounds to 4
-   *  6. -3.8 rounds to -4.
-   */
-  ROUND_HALF_CEIL = 7,
-
-  /**
-   * Rounds towards nearest neighbour.
-   * If equidistant, rounds towards -Infinity
-   *
-   * Examples:
-   *  1. 3.1 rounds to 3
-   *  2. -3.1 rounds to -3.
-   *  3. 3.5 rounds to 3.
-   *  4. -3.5 rounds to -4.
-   *  5. 3.8 rounds to 4
-   *  6. -3.8 rounds to -4.
-   */
-  ROUND_HALF_FLOOR = 8,
-}
-
-/**
- * Configuration options for the {@link Fraction } class.
- */
-export type Config = {
-  /**
-   * The rounding mode to use when rounding the Fraction.
-   * It only apply to methods that may incur rounding(irrational methods),
-   * or converting to a or number/string representation.
-   */
-
-  roundingMode: RoundingMode;
-  /**
-   * The number of decimal places to round to.
-   * It only apply to methods that may incur rounding(irrational methods),
-   * or converting to a or number/string representation.
-   */
-  decimalPlaces: number;
-
-  /**
-   * The maximum number of decimal places preserved in the Fraction, it only apply to methods that incur rounding(irrational method).
-   */
-  maxDecimalPlaces: number;
-
-  /**
-   * The number of significant digits to preserve when calling the {@link Fraction.toPrecision | Fraction..toPrecision} method.
-   */
-  significantDigits: number;
-
-  /**
-   * Determines whether trailing zeros are preserved when converting the Fraction to a string representation.
-   */
-  trailingZeros: boolean;
-
-  /**
-   * Optional configuration for the {@link Fraction.toFixed | Fraction.toFixed} method.
-   */
-  toFixed?: {
-    /**
-     * The number of decimal places to round to.
-     */
-    decimalPlaces?: number;
-
-    /**
-     * The {@link RoundingMode | rounding mode} to be applied.
-     */
-    roundingMode?: RoundingMode;
-
-    /**
-     * Determines whether trailing zeros are preserved.
-     */
-    trailingZeros?: boolean;
-  };
-
-  /**
-   * Optional configuration for the {@link Fraction.toPrecision | Fraction.toPrecision} method.
-   */
-  toPrecision?: {
-    /**
-     * The number of significant digits to preserve when using the toPrecision() method.
-     */
-    significantDigits?: number;
-
-    /**
-     * The rounding mode.
-     */
-    roundingMode?: RoundingMode;
-  };
-
-  /**
-   * Optional configuration for the toExponential() method.
-   */
-  toExponential?: {
-    /**
-     * The number of decimal places to round to when using the toExponential() method.
-     */
-    decimalPlaces?: number;
-
-    /**
-     * The {@link RoundingMode | rounding mode} to be applied.
-     */
-    roundingMode?: RoundingMode;
-
-    /**
-     * Determines whether trailing zeros are preserved when using the toExponential() method.
-     */
-    trailingZeros?: boolean;
-  };
-
-  /**
-   * Optional configuration for the toFormat() method.
-   */
-  toFormat?: {
-    /**
-     * The number of decimal places to round to when using the toFormat() method.
-     */
-    decimalPlaces?: number;
-
-    /**
-     * The {@link RoundingMode | rounding mode} to be applied.
-     */
-    roundingMode?: RoundingMode;
-
-    /**
-     * Determines whether trailing zeros are preserved.
-     */
-    trailingZeros?: boolean;
-
-    /**
-     * Formatting options for the {@link Fraction.toFormat | Fraction.toFormat} method.
-     */
-    format?: {
-      /**
-       * The grouping size of the integer part, default to `3`.
-       */
-      groupSize?: number;
-
-      /**
-       * The grouping separator of the integer part, default to `,`.
-       */
-      groupSeparator?: string;
-
-      /**
-       * The decimal separator, default to `.`.
-       */
-      decimalSeparator?: string;
-    };
-  };
-};
-
-/**
- * Default configuration options for the Fraction class.
- *
- * @see {@link Config}
- */
-export const DEFAULT_CONFIG = {
-  roundingMode: RoundingMode.ROUND_HALF_UP,
-  decimalPlaces: 0,
-  maxDecimalPlaces: 20,
-  significantDigits: 1,
-  trailingZeros: true,
-  toFormat: {
-    format: {
-      groupSize: 3,
-      groupSeparator: ',',
-      decimalSeparator: '.',
-    },
-  },
-} as const;
-
-/**
- * Merges a partial configuration object with the default configuration.
- * @param c - The partial configuration object to merge.
- * @returns A configuration object with default values merged with the provided partial configuration.
- */
-const mergeWithDefaultConfig = (c: Partial<Config>): Config => {
-  return {
-    ...DEFAULT_CONFIG,
-    ...c,
-    toFormat: {
-      ...c.toFormat,
-      format: {
-        ...DEFAULT_CONFIG.toFormat.format,
-        ...c.toFormat?.format,
-      },
-    },
-  };
-};
-
-/**
- * Represents Fraction or NumberIsh. A `NumberIsh` can be converted to a Fraction by calling `new Fraction(numerator: NumberIsh)`
- */
-export type FractionIsh = Fraction | NumberIsh;
+type FractionIsh = _FractionIsh | Fraction;
 
 export class Fraction {
   // Fraction constants
-  public static readonly ZERO = new Fraction(0);
-  public static readonly ONE = new Fraction(1);
-
-  /**
-   * The numerator of the fraction.
-   */
-  public readonly numerator: bigint;
-
-  /**
-   * The denominator of the fraction.
-   */
-  public readonly denominator: bigint;
-
-  private static _config: Config = DEFAULT_CONFIG;
+  public readonly fractionData: FractionData;
+  private static _helper = new FractionHelper();
 
   /**
    * Returns the current configuration.
    */
   public static get config(): Config {
-    return Fraction._config;
+    return Fraction._helper.config;
   }
 
   /**
@@ -333,78 +24,22 @@ export class Fraction {
    * @returns The updated configuration.
    */
   public static setConfig(c: Partial<Config>) {
-    Fraction._config = mergeWithDefaultConfig(c);
+    Fraction._helper.config = c;
   }
 
   /**
    * private instance getter.
    */
-  private get config(): Config {
-    return Fraction._config;
+  private get helper(): FractionHelper {
+    return Fraction._helper;
   }
 
-  /**
-   * Creates a Fraction instance by parsing a numeric string.
-   * @param value - The value to parse.
-   * @returns [bigint, bigint] representing the successfully parsed Fraction numerator and denominator.
-   * @throws If value is not a valid NumberIsh.
-   */
-  private static parse(value: FractionIsh): [bigint, bigint] {
-    if (value instanceof Fraction) return [value.numerator, value.denominator];
-    if (typeof value === 'bigint') return [value, 1n];
-    if (typeof value === 'number' && Number.isInteger(value))
-      return [BigInt(value), 1n];
-
-    const v = Number(value);
-
-    if (Number.isNaN(v))
-      throw new Error(`Cannot convert ${value} to a Fraction`);
-
-    const s = typeof value === 'string' ? value.trim() : `${value}`;
-    const [base, exp] = s.split('e');
-    const [integer, decimal = ''] = base.split('.');
-
-    if (!exp && !decimal) return [BigInt(integer), 1n];
-
-    let d = 10n ** BigInt(decimal.length);
-    let n = BigInt(integer);
-    n = v > 0 ? n * d + BigInt(decimal) : n * d - BigInt(decimal);
-
-    if (exp) {
-      const e = BigInt(exp);
-
-      if (e >= 0n) {
-        n *= 10n ** e;
-      } else {
-        d *= 10n ** -e;
-      }
-    }
-
-    return [n, d];
+  public get numerator(): bigint {
+    return this.fractionData.numerator;
   }
 
-  /**
-   * Tries to parse the given value as a Fraction
-   * @param value - The value to parse.
-   * @returns The parsed Fraction value, or undefined if `value` is not a valid NumberIsh.
-   *
-   * ```ts
-   * const a = new Fraction('1.23');
-   * const b = Fraction.tryParse('1.23');
-   * a.eq(b); // true
-   *
-   * const c = Fraction.tryParse('abc');
-   * c === undefined // true
-   *
-   * new Fraction('abc'); // throws
-   * ```
-   */
-  public static tryParse(value: FractionIsh): Fraction | undefined {
-    try {
-      return new Fraction(value);
-    } catch (_) {
-      return undefined;
-    }
+  public get denominator(): bigint {
+    return this.fractionData.denominator;
   }
 
   /**
@@ -435,26 +70,15 @@ export class Fraction {
    * new Fraction('invalid NumberIsh'); // throws
    * ```
    */
-  constructor(numerator: FractionIsh, denominator?: FractionIsh) {
-    const x = Fraction.parse(numerator);
-    const y = Fraction.parse(denominator ?? 1n);
+  constructor(numerator: FractionIsh, denominator: FractionIsh = 1n) {
+    this.fractionData = new FractionData(
+      this.extractFractionIsh(numerator),
+      this.extractFractionIsh(denominator),
+    );
+  }
 
-    const n = x[0] * y[1];
-    const d = x[1] * y[0];
-
-    if (d === 0n) throw new Error('Division by zero');
-
-    if (n === 0n) {
-      this.numerator = 0n;
-      this.denominator = 1n;
-    } else if (d === 1n) {
-      this.numerator = n;
-      this.denominator = d;
-    } else {
-      const divisor = gcd(n, d);
-      this.numerator = n / divisor;
-      this.denominator = d / divisor;
-    }
+  private extractFractionIsh(value: FractionIsh): _FractionIsh {
+    return value instanceof Fraction ? value.fractionData : value;
   }
 
   /**
@@ -467,7 +91,7 @@ export class Fraction {
    * ```
    */
   public get quotient(): bigint {
-    return this.numerator / this.denominator;
+    return this.fractionData.numerator / this.fractionData.denominator;
   }
 
   /**
@@ -485,7 +109,7 @@ export class Fraction {
    * ```
    */
   public get remainder(): Fraction {
-    return new Fraction(this.numerator % this.denominator, this.denominator);
+    return new Fraction(FractionHelper.getRemainder(this.fractionData));
   }
 
   /**
@@ -500,9 +124,7 @@ export class Fraction {
    * ```
    */
   public invert(): Fraction {
-    if (this.isZero()) return this;
-
-    return new Fraction(this.denominator, this.numerator);
+    return new Fraction(FractionHelper.invert(this.fractionData));
   }
 
   /**
@@ -518,7 +140,7 @@ export class Fraction {
    * ```
    */
   public negate(): Fraction {
-    return this.mul(-1n);
+    return new Fraction(FractionHelper.negate(this.fractionData));
   }
 
   /**
@@ -530,58 +152,7 @@ export class Fraction {
    * ```
    */
   public abs(): Fraction {
-    if (this.numerator * this.denominator < 0n) {
-      if (this.numerator < 0n) {
-        return new Fraction(-this.numerator, this.denominator);
-      } else {
-        return new Fraction(this.numerator, -this.denominator);
-      }
-    } else {
-      return this;
-    }
-  }
-
-  /**
-   * @deprecated Use {@link Fraction.shl | Fraction.shl} instead.
-   *
-   * Expands the fraction by multiplying it by 10 raised to the specified decimal places.
-   * @param decimals - The number of decimal places to expand.
-   * @returns A new Fraction instance representing the expanded fraction.
-   * @throws If n is not a positive integer.
-   *
-   * ```ts
-   * new Fraction(1).expandDecimals(3).eq(1000); // true
-   * new Fraction(1).expandDecimals(4).eq(1000); // true
-   * new Fraction('123').expandDecimals(18).eq(123n * 10n ** 18n); // true
-   * ```
-   */
-  public expandDecimals(decimals: number): Fraction {
-    if (!Number.isInteger(decimals) || decimals < 0)
-      throw new Error('`decimals` must be a > 0 integer');
-
-    return this.mul(10n ** BigInt(decimals));
-  }
-
-  /**
-   * @deprecated Use {@link Fraction.shl | Fraction.shr} instead.
-   *
-   * Normalizes the fraction by dividing it by 10 raised to the specified decimal places.
-   * @param decimals - The number of decimal places to normalize.
-   * @return A new Fraction instance representing the normalized fraction.
-   * @returns A new Fraction representing the result of the left shift operation.
-   * @throws If n is not a positive integer.
-   *
-   * ```ts
-   * new Fraction(1000).normalizeDecimals(3).eq(1); // true
-   * new Fraction(1000).normalizeDecimals(4).eq(0.1); // true
-   * new Fraction('123e18').normalizeDecimals(18).eq(123); // true
-   * ```
-   */
-  public normalizeDecimals(decimals: number): Fraction {
-    if (!Number.isInteger(decimals) || decimals < 0)
-      throw new Error('`decimals` must be a > 0 integer');
-
-    return this.div(10n ** BigInt(decimals));
+    return new Fraction(FractionHelper.abs(this.fractionData));
   }
 
   /**
@@ -597,10 +168,7 @@ export class Fraction {
    * ```
    */
   public shl(n: number): Fraction {
-    if (!Number.isInteger(n) || n < 0)
-      throw new Error('`n` must be a > 0 integer');
-
-    return this.mul(10n ** BigInt(n));
+    return new Fraction(FractionHelper.shl(this.fractionData, n));
   }
 
   /**
@@ -616,10 +184,7 @@ export class Fraction {
    * ```
    */
   public shr(n: number): Fraction {
-    if (!Number.isInteger(n) || n < 0)
-      throw new Error('`n` must be a > 0 integer');
-
-    return this.div(10n ** BigInt(n));
+    return new Fraction(FractionHelper.shr(this.fractionData, n));
   }
 
   /**
@@ -632,7 +197,7 @@ export class Fraction {
    * ```
    */
   public isZero(): boolean {
-    return this.numerator === 0n;
+    return FractionHelper.isZero(this.fractionData);
   }
 
   /**
@@ -645,7 +210,7 @@ export class Fraction {
    * ```
    */
   public isInteger(): boolean {
-    return this.remainder.isZero();
+    return FractionHelper.isInteger(this.fractionData);
   }
 
   /**
@@ -655,11 +220,7 @@ export class Fraction {
    * @throws If other is not a valid NumberIsh
    */
   public eq(other: FractionIsh): boolean {
-    other = new Fraction(other);
-
-    return (
-      this.numerator * other.denominator === other.numerator * this.denominator
-    );
+    return FractionHelper.eq(this.fractionData, this.extractFractionIsh(other));
   }
 
   /**
@@ -669,7 +230,10 @@ export class Fraction {
    * @throws If other is not a valid NumberIsh
    */
   public neq(other: FractionIsh): boolean {
-    return !this.eq(other);
+    return FractionHelper.neq(
+      this.fractionData,
+      this.extractFractionIsh(other),
+    );
   }
 
   /**
@@ -680,11 +244,7 @@ export class Fraction {
    * @throws If other is not a valid NumberIsh
    */
   public lt(other: FractionIsh): boolean {
-    other = new Fraction(other);
-
-    return (
-      this.numerator * other.denominator < other.numerator * this.denominator
-    );
+    return FractionHelper.lt(this.fractionData, this.extractFractionIsh(other));
   }
 
   /**
@@ -694,10 +254,9 @@ export class Fraction {
    * @throws If other is not a valid NumberIsh
    */
   public lte(other: FractionIsh): boolean {
-    other = new Fraction(other);
-
-    return (
-      this.numerator * other.denominator <= other.numerator * this.denominator
+    return FractionHelper.lte(
+      this.fractionData,
+      this.extractFractionIsh(other),
     );
   }
 
@@ -708,11 +267,7 @@ export class Fraction {
    * @throws If other is not a valid NumberIsh
    */
   public gt(other: FractionIsh): boolean {
-    other = new Fraction(other);
-
-    return (
-      this.numerator * other.denominator > other.numerator * this.denominator
-    );
+    return FractionHelper.gt(this.fractionData, this.extractFractionIsh(other));
   }
 
   /**
@@ -722,10 +277,9 @@ export class Fraction {
    * @throws If other is not a valid NumberIsh
    */
   public gte(other: FractionIsh): boolean {
-    other = new Fraction(other);
-
-    return (
-      this.numerator * other.denominator >= other.numerator * this.denominator
+    return FractionHelper.gte(
+      this.fractionData,
+      this.extractFractionIsh(other),
     );
   }
 
@@ -736,11 +290,8 @@ export class Fraction {
    * @throws If other is not a valid NumberIsh
    */
   public add(other: FractionIsh): Fraction {
-    other = new Fraction(other);
-
     return new Fraction(
-      this.numerator * other.denominator + other.numerator * this.denominator,
-      this.denominator * other.denominator,
+      FractionHelper.add(this.fractionData, this.extractFractionIsh(other)),
     );
   }
 
@@ -751,11 +302,8 @@ export class Fraction {
    * @throws If other is not a valid NumberIsh
    */
   public sub(other: FractionIsh): Fraction {
-    other = new Fraction(other);
-
     return new Fraction(
-      this.numerator * other.denominator - other.numerator * this.denominator,
-      this.denominator * other.denominator,
+      FractionHelper.sub(this.fractionData, this.extractFractionIsh(other)),
     );
   }
 
@@ -766,11 +314,8 @@ export class Fraction {
    * @throws If other is not a valid NumberIsh
    */
   public mul(other: FractionIsh): Fraction {
-    other = new Fraction(other);
-
     return new Fraction(
-      this.numerator * other.numerator,
-      this.denominator * other.denominator,
+      FractionHelper.mul(this.fractionData, this.extractFractionIsh(other)),
     );
   }
 
@@ -783,11 +328,8 @@ export class Fraction {
    *  2. other is zero.
    */
   public div(other: FractionIsh): Fraction {
-    other = new Fraction(other);
-
     return new Fraction(
-      this.numerator * other.denominator,
-      other.numerator * this.denominator,
+      FractionHelper.div(this.fractionData, this.extractFractionIsh(other)),
     );
   }
 
@@ -812,31 +354,7 @@ export class Fraction {
    * ```
    */
   public toFixed(decimalPlaces?: number, opts?: Config['toFormat']): string {
-    decimalPlaces =
-      decimalPlaces ??
-      opts?.decimalPlaces ??
-      this.config?.toFixed?.decimalPlaces ??
-      this.config.decimalPlaces;
-
-    if (!Number.isInteger(decimalPlaces) || decimalPlaces < 0)
-      throw new Error('`decimalPlaces` must be a >= 0 integer.');
-
-    const roundingMode =
-      opts?.roundingMode ??
-      this.config.toFixed?.roundingMode ??
-      this.config.roundingMode;
-    const trailingZeros =
-      opts?.trailingZeros ??
-      this.config.toFixed?.trailingZeros ??
-      this.config.trailingZeros;
-
-    return toFixed({
-      numerator: this.numerator,
-      denominator: this.denominator,
-      decimalPlaces,
-      roundingMode,
-      trailingZeros,
-    });
+    return this.helper.toFixed(this.fractionData, decimalPlaces, opts);
   }
 
   /**
@@ -863,26 +381,7 @@ export class Fraction {
     significantDigits?: number,
     opts?: Config['toPrecision'],
   ): string {
-    significantDigits =
-      significantDigits ??
-      opts?.significantDigits ??
-      this.config.toPrecision?.significantDigits ??
-      this.config.significantDigits;
-
-    if (!Number.isInteger(significantDigits) || significantDigits < 1)
-      throw new Error(`'significantDigits' must be a  >= 1 integer.`);
-
-    const roundingMode =
-      opts?.roundingMode ??
-      this.config.toPrecision?.roundingMode ??
-      this.config.roundingMode;
-
-    return toPrecision({
-      numerator: this.numerator,
-      denominator: this.denominator,
-      significantDigits,
-      roundingMode,
-    });
+    return this.helper.toPrecision(this.fractionData, significantDigits, opts);
   }
 
   /**
@@ -908,32 +407,7 @@ export class Fraction {
     decimalPlaces?: number,
     opts?: Config['toExponential'],
   ): string {
-    decimalPlaces =
-      decimalPlaces ??
-      opts?.decimalPlaces ??
-      this.config.toExponential?.decimalPlaces ??
-      this.config.decimalPlaces;
-
-    if (!Number.isInteger(decimalPlaces) || decimalPlaces < 0)
-      throw new Error('`decimalPlaces` must be a >= 0 integer.');
-
-    const roundingMode =
-      opts?.roundingMode ??
-      this.config.toExponential?.roundingMode ??
-      this.config.roundingMode;
-
-    const trailingZeros =
-      opts?.trailingZeros ??
-      this.config.toExponential?.trailingZeros ??
-      this.config.trailingZeros;
-
-    return toExponential({
-      numerator: this.numerator,
-      denominator: this.denominator,
-      decimalPlaces,
-      roundingMode,
-      trailingZeros,
-    });
+    return this.helper.toExponential(this.fractionData, decimalPlaces, opts);
   }
 
   /**
@@ -951,46 +425,7 @@ export class Fraction {
    * ```
    */
   public toFormat(opts?: Config['toFormat']): string {
-    const decimalPlaces =
-      opts?.decimalPlaces ??
-      this.config.toFormat?.decimalPlaces ??
-      this.config.decimalPlaces;
-
-    const roundingMode =
-      opts?.roundingMode ??
-      this.config.toFormat?.roundingMode ??
-      this.config.roundingMode;
-
-    const trailingZeros =
-      opts?.trailingZeros ??
-      this.config.toFormat?.trailingZeros ??
-      this.config.trailingZeros;
-
-    const groupSize =
-      opts?.format?.groupSize ??
-      this.config.toFormat?.format?.groupSize ??
-      DEFAULT_CONFIG.toFormat.format.groupSize;
-
-    const groupSeparator =
-      opts?.format?.groupSeparator ??
-      this.config.toFormat?.format?.groupSeparator ??
-      DEFAULT_CONFIG.toFormat.format.groupSeparator;
-
-    const decimalSeparator =
-      opts?.format?.decimalSeparator ??
-      this.config.toFormat?.format?.decimalSeparator ??
-      DEFAULT_CONFIG.toFormat.format.decimalSeparator;
-
-    const str = this.toFixed(decimalPlaces, {
-      trailingZeros,
-      roundingMode,
-    });
-
-    return addSeparators(str, {
-      groupSize,
-      groupSeparator,
-      decimalSeparator,
-    });
+    return this.helper.toFormat(this.fractionData, opts);
   }
 
   /**
@@ -998,16 +433,16 @@ export class Fraction {
    * @returns A Fraction instance representing the current fraction.
    */
   public get asFraction(): Fraction {
-    return new Fraction(this.numerator, this.denominator);
+    return new Fraction(
+      this.fractionData.numerator,
+      this.fractionData.denominator,
+    );
   }
 
   /**
    * Converts the Fraction object to a JSON representation for avoiding serialization errors.
    */
   public toJSON() {
-    return {
-      numerator: this.numerator.toString(),
-      denominator: this.denominator.toString(),
-    };
+    return this.fractionData.toJSON();
   }
 }

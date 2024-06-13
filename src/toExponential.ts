@@ -1,4 +1,4 @@
-import type { RoundingMode } from './fraction';
+import type { RoundingMode } from './fractionConfig';
 import { toFixed } from './toFixed';
 
 /**

@@ -1,4 +1,5 @@
-import { Fraction, RoundingMode } from './fraction';
+import { Fraction } from './fraction';
+import { RoundingMode } from './fractionConfig';
 
 describe('Rounding mode examples', () => {
   describe('RoundingMode.ROUND_UP', () => {

@@ -1,4 +1,4 @@
-import { RoundingMode } from './fraction';
+import { RoundingMode } from './fractionConfig';
 
 type Carry = bigint;
 type DecimalPartStr = string;

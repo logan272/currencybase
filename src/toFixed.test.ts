@@ -1,4 +1,5 @@
-import { Fraction, RoundingMode } from './fraction';
+import { Fraction } from './fraction';
+import { RoundingMode } from './fractionConfig';
 
 describe('Fraction.toFixed', () => {
   it('should throw if `decimalPlaces` is not an >= 0 integer', () => {

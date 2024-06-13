@@ -24,7 +24,7 @@ export class FractionData {
     }
   }
   public static parse(value: FractionIsh): [bigint, bigint] {
-    if (value instanceof FractionData)
+    if (value instanceof FractionData || (value && typeof value === 'object'))
       return [value.numerator, value.denominator];
     if (
       typeof value === 'bigint' ||

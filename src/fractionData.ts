@@ -1,6 +1,11 @@
 import { gcd } from './gcd';
 import type { NumberIsh } from './types';
 
+export type FractionPureData = {
+  numerator: bigint;
+  denominator: bigint;
+};
+
 export class FractionData {
   public static readonly ZERO = new FractionData(0n);
   public static readonly ONE = new FractionData(1n);
@@ -80,6 +85,12 @@ export class FractionData {
   public clone(): FractionData {
     return new FractionData(this._numerator, this._denominator, false);
   }
+  public pure(): FractionPureData {
+    return {
+      numerator: this._numerator,
+      denominator: this._denominator,
+    };
+  }
   public toJSON() {
     return {
       numerator: this._numerator.toString(),
@@ -88,4 +99,4 @@ export class FractionData {
   }
 }
 
-export type FractionIsh = FractionData | NumberIsh;
+export type FractionIsh = FractionData | FractionPureData | NumberIsh;
